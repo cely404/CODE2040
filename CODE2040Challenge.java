@@ -8,6 +8,8 @@ import java.net.*;
 import java.io.*;
 import java.lang.*;
 import org.json.simple.JSONObject;
+import java.util.ArrayList; 
+import java.util.List;
 
 public class CODE2040Challenge{
     public static void main(String[] args)
@@ -16,26 +18,36 @@ public class CODE2040Challenge{
         JSONObject json = new JSONObject();
         String token = "DnCvBoZG7W";
         String response; 
-        String result;
+        String[] result;
         json.put("token", token);
         String url;
         HttpURLConnection connection = null;  
-        //the string array representing the haystack 
-        String[] haystack = new String[] {"bF481","60ddV","kBhXJ","Rr17c","dduty",
-                                          "RnKMN","ZYrGZ","cvycf","4cUBo","nvGM8",
-                                          "ffqHM","0Ih3W","5dPao","vLdRm","OCqNK",
-                                          "VvvRe","dviKB","9ma9s","PfgUD","VxFug"};
-        //string representing the needle 
-        String needle = "4cUBo";
-        //method call to find the needle in the haystack
-        json.put("needle", findNeedle(haystack, needle));  
-        String urlParameters = json.toString();
-        url = "http://challenge.code2040.org/api/validateneedle";
+       
+        //String array of list of strings to be iterated through 
+        String[] stringList = new String[]{"428XKkW5","547ucl8i","547beSlv",
+                                           "5478VM23","42850Ylw","5478uVRM"};
+
+        String prefix = "547";
+
+        //result is the resulting array of words that do not contain the prefix specified 
+        result = notPrefix(stringList, prefix);
+
+        //Use a string buffer to manually create the array and dictionary entries
+        StringBuffer sb = new StringBuffer(); 
+        sb.append(json.toString()); 
+        sb.setLength(sb.length() - 1);
+        sb.append(",\"array\":"); 
+        sb.append(arrayToString(result));
+        sb.append("}");
+
+        //Send string representation of String Buffer as urlParameters 
+        String urlParameters = sb.toString();
+        url = "http://challenge.code2040.org/api/validateprefix";
         response = postMethod(connection, url, urlParameters); 
         System.out.println(response);
 
         if(connection != null){
-            connection.disconnect(); 
+             connection.disconnect(); 
         }
 
     }
@@ -81,8 +93,7 @@ public class CODE2040Challenge{
     }
     /* Function takes in a string and outputs the reverse of the string.  
     Creates an empty array and populates it in reverse order. */
-    public static String reverse(String original)
-    {
+    public static String reverse(String original){
         char[] charArray = original.toCharArray();
         int length = charArray.length;
         char[] newArray = new char[length];
@@ -109,4 +120,32 @@ public class CODE2040Challenge{
         return -1;
     }
 
+    public static String[] notPrefix(String[] stringList, String prefix){
+
+        List<String> list = new ArrayList<String>();
+        for(String word: stringList){
+            if(!word.startsWith(prefix)){
+            	list.add(word);
+            }
+        }
+        return list.toArray(new String[list.size()]);
+    }
+    
+    /* Function takes in a String array and returns the string 
+       representation of the array */
+    private static String arrayToString(String[] stringArray){
+        StringBuffer sb = new StringBuffer(); 
+        sb.append("["); 
+        for (String word: stringArray){
+        	sb.append('"');
+            sb.append(word);
+            sb.append('"');
+            sb.append(','); 
+        }
+        //modify the length by one to remove trailing comma 
+        sb.setLength(sb.length() - 1);
+        sb.append("]");
+        return sb.toString();
+
+    }
 }
