@@ -8,8 +8,9 @@ import java.net.*;
 import java.io.*;
 import java.lang.*;
 import org.json.simple.JSONObject;
-import java.util.ArrayList; 
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.text.*;
 
 public class CODE2040Challenge{
     public static void main(String[] args)
@@ -23,26 +24,15 @@ public class CODE2040Challenge{
         String url;
         HttpURLConnection connection = null;  
        
-        //String array of list of strings to be iterated through 
-        String[] stringList = new String[]{"428XKkW5","547ucl8i","547beSlv",
-                                           "5478VM23","42850Ylw","5478uVRM"};
 
-        String prefix = "547";
+        String dateStamp = "1986-11-01T14:24:00.000Z"; 
+        int interval = 384722384; 
 
-        //result is the resulting array of words that do not contain the prefix specified 
-        result = notPrefix(stringList, prefix);
+        //function call to add seconds to modify datestamp
+        json.put("datestamp",fastForward(dateStamp, interval));
 
-        //Use a string buffer to manually create the array and dictionary entries
-        StringBuffer sb = new StringBuffer(); 
-        sb.append(json.toString()); 
-        sb.setLength(sb.length() - 1);
-        sb.append(",\"array\":"); 
-        sb.append(arrayToString(result));
-        sb.append("}");
-
-        //Send string representation of String Buffer as urlParameters 
-        String urlParameters = sb.toString();
-        url = "http://challenge.code2040.org/api/validateprefix";
+        String urlParameters = json.toString();
+        url = "http://challenge.code2040.org/api/validatetime";
         response = postMethod(connection, url, urlParameters); 
         System.out.println(response);
 
@@ -148,4 +138,29 @@ public class CODE2040Challenge{
         return sb.toString();
 
     }
+
+    /* Function takes a string representing the 8601 Datestamp string and the 
+       int of seconds to add to it. */ 
+    private static String fastForward(String dateStamp, int interval){
+    	//Sets up format for the 8601 dateStamp 
+        DateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
+        
+        String fwdDateStamp= "";
+    	try{
+    		//parses the result into a date object 
+    	    Date result = dateFmt.parse(dateStamp); 
+
+    	    //akes result and gets the current time in milliseconds then adds the 
+    	    //seconds specified to the long value, seconds
+    	    long seconds = (result.getTime()/1000) + interval; 
+            //fwdDateStamp holds the new date,in 8601 datestamp format  
+    	    fwdDateStamp = dateFmt.format(new Date(seconds*1000)); 
+        }
+        catch(Exception e){
+        	//must catch an exception during parsing 
+        	e.printStackTrace();
+        }
+        return fwdDateStamp;
+    }
+
 }
